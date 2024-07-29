@@ -1,0 +1,19 @@
+{
+  "name": "com.arctop.arctopsdk",
+  "version": "0.0.1",
+  "displayName": "Arctop SDK",
+  "description": "Arctop SDK For Unity",
+  "unity": "2020.1",
+  "documentationUrl": "https://arctop.com",
+  "changelogUrl": "https://arctop.com/changelog.html",
+  "licensesUrl": "https://arctop.com/licensing.html",
+  "keywords": [
+    "Arctop",
+    "BCI"
+  ],
+  "author": {
+    "name": "Arctop",
+    "email": "info@arctop.com",
+    "url": "https://arctop.com"
+  }
+}
