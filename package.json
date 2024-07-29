@@ -11,6 +11,13 @@
     "Arctop",
     "BCI"
   ],
+  "samples": [
+    {
+      "displayName": "QA Signal Example",
+      "description": "Sample Scene to show how to construct a QA Signal Screen",
+      "path": "Samples~/QA"
+    }
+  ],
   "author": {
     "name": "Arctop",
     "email": "info@arctop.com",
