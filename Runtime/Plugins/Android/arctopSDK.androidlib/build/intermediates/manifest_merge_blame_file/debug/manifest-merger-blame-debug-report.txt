@@ -1,0 +1,17 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.arctop.sdk" >
+4
+5    <uses-sdk android:minSdkVersion="29" />
+6
+7    <application>
+7-->/Users/shai/repos/android-sdk/arctopSDK/src/main/AndroidManifest.xml:4:5-6:19
+8        <meta-data
+8-->/Users/shai/repos/android-sdk/arctopSDK/src/main/AndroidManifest.xml:5:9-141
+9            android:name="io.sentry.dsn"
+9-->/Users/shai/repos/android-sdk/arctopSDK/src/main/AndroidManifest.xml:5:20-48
+10            android:value="https://cfdac1d211074bbc988ef0ecf7c6b66b@o380226.ingest.sentry.io/5205822" />
+10-->/Users/shai/repos/android-sdk/arctopSDK/src/main/AndroidManifest.xml:5:49-138
+11    </application>
+12
+13</manifest>

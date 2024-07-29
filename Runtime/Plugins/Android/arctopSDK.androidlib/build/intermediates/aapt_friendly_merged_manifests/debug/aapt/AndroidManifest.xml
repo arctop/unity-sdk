@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.arctop.sdk" >
+
+    <uses-sdk android:minSdkVersion="29" />
+
+    <application>
+        <meta-data
+            android:name="io.sentry.dsn"
+            android:value="https://cfdac1d211074bbc988ef0ecf7c6b66b@o380226.ingest.sentry.io/5205822" />
+    </application>
+
+</manifest>
