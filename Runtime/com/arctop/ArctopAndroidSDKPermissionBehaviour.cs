@@ -1,10 +1,13 @@
 using System;
 using UnityEngine;
-#if UNITY_ANDROID
 using UnityEngine.Android;
-#endif
 namespace com.arctop
 {
+    // Behaviour is used simple to request permission and if granted, create the SDK instance (Bind)
+    // On Android devices this will pop up the permission dialog, or immediately create the SDK if permission has been granted already
+    // On iOS devices, the SDK will be created immediately on Start()
+    // This is just a convenience behaviour. You can extend it to provide other functionality when permissions are denied
+    // You can also implement the whole thing yourself.
     public class ArctopAndroidSDKPermissionBehaviour : MonoBehaviour
     {
         [SerializeField] protected ArctopNativeClient arctopClient;
@@ -28,16 +31,14 @@ namespace com.arctop
                 Permission.RequestUserPermission(ArctopSDK.ARCTOP_PERMISSION, callbacks);
             }
             #else
-            Debug.Log("Calling create");
             arctopClient?.CreateArctopSDK();
             #endif
         }
-#if UNITY_ANDROID
+        
         protected void PermissionCallbacks_PermissionDeniedAndDontAskAgain(string permissionName)
         {
             Debug.Log($"{permissionName} PermissionDeniedAndDontAskAgain");
         }
-        
         protected void PermissionCallbacks_PermissionGranted(string permissionName)
         {
             Debug.Log($"{permissionName} PermissionCallbacks_PermissionGranted");
@@ -49,11 +50,9 @@ namespace com.arctop
                 }
             }
         }
-        
         protected void PermissionCallbacks_PermissionDenied(string permissionName)
         {
             Debug.Log($"{permissionName} PermissionCallbacks_PermissionDenied");
         }
-#endif
     }
 }
