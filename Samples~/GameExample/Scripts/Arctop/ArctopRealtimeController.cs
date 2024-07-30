@@ -10,6 +10,8 @@ public class ArctopRealtimeController : MonoBehaviour
 {
     [SerializeField] private TMP_Text m_TextField;
     [SerializeField] private TMP_Text m_QAStatusLine;
+    [SerializeField] private GameObject m_finishButton;
+    [SerializeField] private GameObject m_exitButton;
     private Dictionary<string, float> m_values = new Dictionary<string, float>();
     private List<string> m_textList = new List<string>();
     public void OnValueChanged(string key, float value)
@@ -37,13 +39,15 @@ public class ArctopRealtimeController : MonoBehaviour
         m_QAStatusLine.text = $"QA: {(passed ? "Passed" : $"Failed Reason {type.ToString()}")}";
     }
     
-    public void OnSessionComplete()
+    public void OnPredictionEnd()
     {
+        m_finishButton.SetActive(false);
         m_QAStatusLine.text = "Session completed successfully";
     }
 
     public void OnSessionComplete(bool success)
     {
         m_QAStatusLine.text = $"Session completed {(success ? "successfully" : "but had errors uploading")}";
+        m_exitButton.SetActive(true);
     }
 }

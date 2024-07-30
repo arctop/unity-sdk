@@ -32,7 +32,6 @@ public class ArctopScanController : MonoBehaviour
     public void OnDeviceButtonClicked(TMP_Text text)
     {
         m_ArctopClient.ConnectToDeviceId(text.text);
-        // GameFlowController.SetDeviceId(text.text);
     }
 
     public void OnScanResult(string[] devices)

@@ -13,6 +13,7 @@ public class ArctopConnectionController : MonoBehaviour
     [SerializeField] private TMP_InputField m_PasswordField;
     [SerializeField] private GameObject m_LoginPanel;
     [SerializeField] private GameObject m_ScanPanel;
+    [SerializeField] private GameObject m_SplashPanel;
     [SerializeField] private TMP_Text m_MessagePanel;
     [SerializeField] private Button startPredictionButton;
 
@@ -29,12 +30,16 @@ public class ArctopConnectionController : MonoBehaviour
     {
         if (success)
         {
+            clearTextTimer = 5f;
+            m_MessagePanel.text = "Checking User's status";
             m_ArctopClient.CheckUserLoggedIn();
         }
         else
         {
+            clearTextTimer = 10000000f;
             m_MessagePanel.text = "SDK Init Failed";
         }
+        m_SplashPanel.SetActive(false);
     }
 
     public void OnLoginButtonClicked()
@@ -49,15 +54,41 @@ public class ArctopConnectionController : MonoBehaviour
         if (success)
         {
             m_MessagePanel.text = "User Logged in!";
+            m_ArctopClient.GetUserCalibrationStatus();
         }
-        else{
+        else
+        {
             if (m_UserField.text.Length > 0)
+            {
                 m_MessagePanel.text = "Wrong password or account doesn't exist.";
+            }
         }
         clearTextTimer = 3f;
-
         m_LoginPanel.SetActive(!success);
-        m_ScanPanel.SetActive(success);
+    }
+
+    public void OnUserCalibrationStatus(ArctopSDK.UserCalibrationStatus status)
+    {
+        switch (status)
+        {
+            case ArctopSDK.UserCalibrationStatus.NeedsCalibration:
+                clearTextTimer = 30f;
+                m_MessagePanel.text = "User is not calibrated. Please use the Arctop app to calibrate.";
+                break;
+            case ArctopSDK.UserCalibrationStatus.CalibrationDone:
+                clearTextTimer = 30f;
+                m_MessagePanel.text = "User models are being calibrated. Please check again in a few minutes.";
+                break;
+            case ArctopSDK.UserCalibrationStatus.ModelsAvailable:
+                clearTextTimer = 3f;
+                m_MessagePanel.text = "User models available!";
+                m_ScanPanel.SetActive(true);
+                break;
+            case ArctopSDK.UserCalibrationStatus.Blocked:
+                clearTextTimer = 100f;
+                m_MessagePanel.text = "User interaction is blocked. Please contact support";
+                break;
+        }
     }
 
     public void DisablePredictionButton(){
