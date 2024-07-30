@@ -17,11 +17,19 @@ namespace com.arctop
         [SerializeField] private bool HandleSDKInit;
         [SerializeField] private bool HandleSDKDestroy;
         
-        [Header("Debug Only")] 
+        [Header("In Editor Debug Only")] 
         [SerializeField]
         private bool m_SimulateRealtime;
         [SerializeField]
         private bool m_SimulateSignalQuality;
+        [SerializeField] 
+        private ArctopSDK.LoginStatus m_SimulatedUserLoggedInResponse;
+        [SerializeField] 
+        private ArctopSDK.UserCalibrationStatus m_SimulatedUserCalibrationResponse;
+        [SerializeField]
+        private bool m_LoginSuccessfullyInEditor = true;
+        [SerializeField] [Tooltip("Allows you to change the connection status in editor")]
+        private ArctopSDK.ConnectionState m_currentDebugConnection = ArctopSDK.ConnectionState.Unknown;
         
         [Header("Events")]
         [SerializeField] private UnityEvent OnUserLoggedIn;
@@ -133,6 +141,7 @@ namespace com.arctop
             //"focus";
             //"enjoyment";
             //"avg_motion";
+            if (m_currentDebugConnection != ArctopSDK.ConnectionState.Connected) return;
             if ((Time.frameCount - m_lastPredictionFrame) % 60 != 0) return;
             onValueChangedCallback("heart_rate" , Random.value * 60 + 60);
             onValueChangedCallback("focus" , Random.value * 60 + 40);
@@ -141,7 +150,8 @@ namespace com.arctop
         }
 
         private float[] m_signalQualityValues = new[] { 113.0f, 113.0f, 113.0f, 113.0f };
-        private ArctopSDK.ConnectionState m_currentDebugConnection = ArctopSDK.ConnectionState.Unknown;
+        
+        
         private int m_lastFrame = 0;
         private int m_lastPredictionFrame = 0;
         private void signalQualitySimulation()
@@ -225,7 +235,7 @@ namespace com.arctop
         public void CheckUserLoggedIn()
         {
 #if UNITY_EDITOR
-            onUserLoggedInCheck(false);
+            onUserLoggedInCheck(m_SimulatedUserLoggedInResponse == ArctopSDK.LoginStatus.LoggedIn);
 #elif UNITY_IOS || UNITY_ANDROID
             ArctopNativePlugin.arctopSDKIsUserLoggedIn(onUserLoggedInCheck);
 #endif
@@ -240,7 +250,7 @@ namespace com.arctop
         public void GetUserCalibrationStatus()
         {
 #if UNITY_EDITOR
-            AddAction(() => { instance.OnCalibrationStatus.Invoke(ArctopSDK.UserCalibrationStatus.ModelsAvailable); });
+            AddAction(() => { instance.OnCalibrationStatus.Invoke(m_SimulatedUserCalibrationResponse); });
 #elif UNITY_IOS || UNITY_ANDROID
             ArctopNativePlugin.arctopSDKGetUserCalibrationStatus(onCalibrationStatusSuccess, onCalibrationStatusFailure );
 #endif
@@ -264,7 +274,14 @@ namespace com.arctop
         public void LoginUser(string email, string password)
         {
 #if UNITY_EDITOR
-            onLoginSuccess();
+            if (m_LoginSuccessfullyInEditor)
+            {
+                onLoginSuccess();
+            }
+            else
+            {
+                onLoginFailed((int)ArctopSDK.ResponseCodes.UnknownError);
+            }
 #elif UNITY_IOS 
             ArctopNativePlugin.arctopSDKLogin(email,password,onLoginSuccess,onLoginFailed);
 #elif UNITY_ANDROID
@@ -315,6 +332,15 @@ namespace com.arctop
         {
             yield return new WaitForSeconds(0.5f);
             onConnectionChanged(2, 5);
+        }
+
+        private IEnumerator completeInEditorSession()
+        {
+            DisconnectDevice();
+            yield return new WaitForSeconds(1f);
+            onPredictionEndSuccess();
+            yield return new WaitForSeconds(2f);
+            onSessionComplete();
         }
 #endif
         [MonoPInvokeCallback((typeof(ArctopNativePlugin.ScanResultCallback)))]
@@ -375,10 +401,10 @@ namespace com.arctop
             AddAction(() => { instance.OnPredictionStartFailed.Invoke(getResponse(error)); });
         }
         
-        public void FinishPrediction(bool disconnectDevice = true)
+        public void FinishPrediction()
         {
 #if UNITY_EDITOR
-            onPredictionEndSuccess();
+            StartCoroutine(completeInEditorSession());
 #elif UNITY_IOS || UNITY_ANDROID
             ArctopNativePlugin.arctopSDKEndPrediction(onPredictionEndSuccess, onPredictionEndFailed);
 #endif
@@ -387,7 +413,7 @@ namespace com.arctop
         public void SetUserMarker(string data)
         {
 #if UNITY_EDITOR
-            
+            Debug.Log($"Set marker {data}");
 #elif UNITY_IOS || UNITY_ANDROID
             ArctopNativePlugin.arctopSDKWriteUserMarker(data);
 #endif
