@@ -4,6 +4,7 @@
   "displayName": "Arctop SDK",
   "description": "Arctop SDK For Unity",
   "unity": "2020.1",
+  "hideInEditor": false,
   "documentationUrl": "https://arctop.com",
   "changelogUrl": "https://arctop.com/changelog.html",
   "licensesUrl": "https://arctop.com/licensing.html",
