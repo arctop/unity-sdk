@@ -14,7 +14,7 @@ namespace com.arctop
         [SerializeField] protected bool createSDKOnPermissionGranted;
         protected void Start()
         {
-            #if UNITY_ANDROID
+            #if UNITY_ANDROID && !UNITY_EDITOR
             if (Permission.HasUserAuthorizedPermission(ArctopSDK.ARCTOP_PERMISSION))
             {
                 if (createSDKOnPermissionGranted)
