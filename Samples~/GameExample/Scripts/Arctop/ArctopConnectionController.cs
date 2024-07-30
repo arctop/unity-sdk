@@ -16,7 +16,7 @@ public class ArctopConnectionController : MonoBehaviour
     [SerializeField] private GameObject m_SplashPanel;
     [SerializeField] private TMP_Text m_MessagePanel;
     [SerializeField] private Button startPredictionButton;
-
+    [SerializeField] private ArctopSDK.Predictions m_PredictionToStart = ArctopSDK.Predictions.ZONE;
     private float clearTextTimer = 0;
     void Update(){
         if (clearTextTimer < 0){
@@ -97,6 +97,6 @@ public class ArctopConnectionController : MonoBehaviour
 
     public void StartPrediction()
     {
-        m_ArctopClient.StartPrediction(ArctopSDK.Predictions.ZONE);
+        m_ArctopClient.StartPrediction(m_PredictionToStart);
     }
 }
