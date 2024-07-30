@@ -239,7 +239,11 @@ namespace com.arctop
 
         public void GetUserCalibrationStatus()
         {
+#if UNITY_EDITOR
+            AddAction(() => { instance.OnCalibrationStatus.Invoke(ArctopSDK.UserCalibrationStatus.ModelsAvailable); });
+#elif UNITY_IOS || UNITY_ANDROID
             ArctopNativePlugin.arctopSDKGetUserCalibrationStatus(onCalibrationStatusSuccess, onCalibrationStatusFailure );
+#endif
         }
 
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessWithIntCallback))]
