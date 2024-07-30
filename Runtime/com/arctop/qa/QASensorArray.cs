@@ -15,7 +15,7 @@ namespace com.arctop.qa
         private Material m_qaMaterial;
         [SerializeField]
         private Renderer[] m_qaDotsRenderers;
-        [SerializeField, Range(0, 114)]
+        [SerializeField, Range(0, 113)]
         private int m_initialColorIndex = 113;
         private Color m_initialColor;
 
