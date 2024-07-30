@@ -64,7 +64,9 @@ namespace com.arctop
             instance = this;
             m_actions = new ConcurrentQueue<Action>();
             m_headbandDevices = new HashSet<string>();
-#if UNITY_IOS
+#if UNITY_EDITOR
+
+#elif UNITY_IOS
             ArctopNativePlugin.arctopSDKSetConnectionCallback(onConnectionChanged);
             ArctopNativePlugin.arctopSDKSetValueChangedCallback(onValueChangedCallback);
             ArctopNativePlugin.arctopSDKSetQAStatusCallback(onQAStatusCallback);
