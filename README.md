@@ -49,7 +49,7 @@ _ArctopNativePlugin.cs_ is the Unity ↔ Native binding. This class defines all 
 
 _ArctopNativeClient.cs_ is a C# Monobehaviour that provides a wrapper around the native functionality, with a public API and UnityEvents allowing linkage of callbacks from the Editor. This class also provides mock functionality inside the editor, which allows testing in editor without the need to build to device.
 
-These two class are the heart of the package. Other classes and their purpose are described later in [insert link to section here]()
+These two class are the heart of the package. Other classes and their purpose are described later in [this document](#package-componentsgi)
 
 ## SDK Flow
 
