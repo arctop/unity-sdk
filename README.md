@@ -4,7 +4,25 @@ The Arctop Unity package is a full-fledged SDK allowing access to Arctop's BCI f
 
 The plugin currently supports builds for Android and iOS devices, with a mock editor functionality to provide quick iteration.
 
-#Put TOC HERE
+<!-- TOC -->
+* [Arctop Unity Package](#arctop-unity-package)
+  * [SDK Documentation](#sdk-documentation)
+  * [Installation](#installation)
+  * [General](#general)
+  * [SDK Flow](#sdk-flow)
+  * [Permissions (Android only)](#permissions-android-only)
+  * [Initialization / Destruction](#initialization--destruction)
+  * [Example Project](#example-project)
+  * [Package components](#package-components)
+    * [ArctopNativeClient](#arctopnativeclient)
+    * [ArctopAndroidSDKPermissionBehaviour](#arctopandroidsdkpermissionbehaviour)
+    * [ArctopSDK](#arctopsdk)
+    * [ArctopNativePlugin](#arctopnativeplugin)
+    * [Listeners / Java Proxies](#listeners--java-proxies)
+  * [Build setup](#build-setup)
+    * [Android setup](#android-setup)
+    * [iOS Setup](#ios-setup)
+<!-- TOC -->
 
 ## SDK Documentation
 
@@ -35,7 +53,7 @@ These two class are the heart of the package. Other classes and their purpose ar
 
 ## SDK Flow
 
-The SDK flow is important to understand, and is described in the [documentation above]()
+The SDK flow is important to understand, and is described in the [documentation above](#sdk-documentation)
 
 To recap, the flow is Permissions/Binding(Android only) -> Init -> Check login status -> Login -> Check calibration status -> Scan device -> Connect -> Run Prediction
 
