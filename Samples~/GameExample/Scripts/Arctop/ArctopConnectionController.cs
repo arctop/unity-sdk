@@ -9,8 +9,7 @@ using UnityEngine.UI;
 public class ArctopConnectionController : MonoBehaviour
 {
     [SerializeField] private ArctopNativeClient m_ArctopClient;
-    [SerializeField] private TMP_InputField m_UserField;
-    [SerializeField] private TMP_InputField m_PasswordField;
+    [SerializeField] private TMP_InputField m_otpField;
     [SerializeField] private GameObject m_LoginPanel;
     [SerializeField] private GameObject m_ScanPanel;
     [SerializeField] private GameObject m_SplashPanel;
@@ -18,6 +17,15 @@ public class ArctopConnectionController : MonoBehaviour
     [SerializeField] private Button startPredictionButton;
     [SerializeField] private ArctopSDK.Predictions m_PredictionToStart = ArctopSDK.Predictions.ZONE;
     private float clearTextTimer = 0;
+
+    private void Start()
+    {
+        // Android currently logs you in from a separate activity, so we don't need the otp code field here
+#if UNITY_ANDROID
+        m_otpField.gameObject.SetActive(false);
+#endif
+    }
+
     void Update(){
         if (clearTextTimer < 0){
             m_MessagePanel.text = "";
@@ -44,8 +52,19 @@ public class ArctopConnectionController : MonoBehaviour
 
     public void OnLoginButtonClicked()
     {
-        m_ArctopClient.LoginUser(m_UserField.text , m_PasswordField.text);
-        // m_ArctopClient.LoginUser();
+        m_ArctopClient.LoginUser(m_otpField.text);
+    }
+
+    public void OnLoginCheckResponse(bool success)
+    {
+        if (success)
+        {
+            m_MessagePanel.text = "Verifying Calibrations...";
+            m_ArctopClient.GetUserCalibrationStatus();
+        }
+        
+        clearTextTimer = 3f;
+        m_LoginPanel.SetActive(!success);
     }
 
     public void OnLoginResponse(bool success)
@@ -58,10 +77,7 @@ public class ArctopConnectionController : MonoBehaviour
         }
         else
         {
-            if (m_UserField.text.Length > 0)
-            {
-                m_MessagePanel.text = "Wrong password or account doesn't exist.";
-            }
+            m_MessagePanel.text = "Login failed. Please try again.";
         }
         clearTextTimer = 3f;
         m_LoginPanel.SetActive(!success);

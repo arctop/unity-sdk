@@ -6,7 +6,6 @@ using System.Linq;
 using AOT;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
 namespace com.arctop
@@ -38,7 +37,7 @@ namespace com.arctop
         [SerializeField] private UnityEvent<ArctopSDK.UserCalibrationStatus> OnCalibrationStatus;
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnCalibrationStatusError;
         [SerializeField] private UnityEvent<string[]> OnDeviceListUpdated;
-        [FormerlySerializedAs("OnSDKInit")] [SerializeField] private UnityEvent OnSDKInitSuccess;
+        [SerializeField] private UnityEvent OnSDKInitSuccess;
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnSDKInitFailed;
         [SerializeField] private UnityEvent OnPredictionStart;
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnPredictionStartFailed;
@@ -272,8 +271,7 @@ namespace com.arctop
         }
 
         
-        //TODO: Can remove the email/password from here
-        public void LoginUser(string email, string password)
+        public void LoginUser(string otp = "")
         {
 #if UNITY_EDITOR
             if (m_LoginSuccessfullyInEditor)
@@ -285,7 +283,7 @@ namespace com.arctop
                 onLoginFailed((int)ArctopSDK.ResponseCodes.UnknownError);
             }
 #elif UNITY_IOS 
-            ArctopNativePlugin.arctopSDKLogin(email,password,onLoginSuccess,onLoginFailed);
+            ArctopNativePlugin.arctopSDKLogin(otp,onLoginSuccess,onLoginFailed);
 #elif UNITY_ANDROID
             ArctopNativePlugin.arctopSDKLogin(onLoginSuccess,onLoginFailed);
 #endif

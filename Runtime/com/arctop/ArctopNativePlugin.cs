@@ -34,8 +34,7 @@ namespace com.arctop
         public static extern void arctopSDKShutdown();
 
         [DllImport("__Internal")]
-        public static extern void arctopSDKLogin(string email, string password, SuccessCallback onSuccess, FailureWithCodeCallback onFailure);
-        // public static extern void arctopSDKLogin(SuccessCallback onSuccess, FailureCallback onFailure);
+        public static extern void arctopSDKLogin(string otp, SuccessCallback onSuccess, FailureWithCodeCallback onFailure);
 
         [DllImport("__Internal")]
         public static extern void arctopSDKIsUserLoggedIn(IsUserLoggedInCallback isLoggedIn);
