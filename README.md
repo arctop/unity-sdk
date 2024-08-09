@@ -171,6 +171,12 @@ You can see an example of the files from the AndroidBuildFiles sample
 
 ### iOS Setup
 
+In order to make sure that the project embeds Arctop's framework correctly, select your target, and under the build phases, open the "Embed Frameworks" section, and add ArctopSDK.framework.
+
+![](docs/embedframework.png)
+
 The SDK requires bluetooth permissions in order to work correctly.
 
 After you have built your project and opened it in XCode, Add the **Privacy - Bluetooth always usage description** key to your info section of your target, and add a text for the dialog that appears at the start of the app.
+
+![](docs/bluetooth.png)
