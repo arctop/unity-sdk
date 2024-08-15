@@ -329,6 +329,9 @@ SWIFT_EXTERN void arctopSDKIsUserLoggedIn(void (* _Nonnull isLoggedIn)(BOOL));
 SWIFT_EXTERN void arctopSDKLogin(int8_t * _Nonnull otp, void (* _Nonnull onSuccess)(void), void (* _Nonnull onFailure)(NSInteger));
 
 
+SWIFT_EXTERN void arctopSDKLogout(void (* _Nonnull onComplete)(void), void (* _Nonnull onFailure)(NSInteger));
+
+
 SWIFT_EXTERN void arctopSDKScanForDevices(void (* _Nonnull callback)(int8_t * _Nonnull));
 
 

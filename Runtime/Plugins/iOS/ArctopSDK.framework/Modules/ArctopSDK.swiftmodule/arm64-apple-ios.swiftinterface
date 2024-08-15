@@ -41,7 +41,13 @@ public protocol ArctopSDKApi {
   #endif
   func deinitializeArctop()
   #if compiler(>=5.3) && $AsyncAwait
-  func loginUser(otp: Swift.String) async -> Swift.Result<Swift.Bool, any Swift.Error>
+  func loginUser(otp: Swift.String) async -> Swift.Result<Swift.Void, any Swift.Error>
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  func loginUser() async -> Swift.Result<Swift.Void, any Swift.Error>
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  func logoutUser() async throws
   #endif
   func scanForAvailableDevices() throws
   func terminateScanForDevices() throws
@@ -50,7 +56,9 @@ public protocol ArctopSDKApi {
   #if compiler(>=5.3) && $AsyncAwait
   func checkUserCalibrationStatus() async -> Swift.Result<ArctopSDK.UserCalibrationStatus, any Swift.Error>
   #endif
-  func isUserLoggedIn() throws -> Swift.Bool
+  #if compiler(>=5.3) && $AsyncAwait
+  func isUserLoggedIn() async throws -> Swift.Bool
+  #endif
   #if compiler(>=5.3) && $AsyncAwait
   func startPredictionSession(_ predictionName: Swift.String) async -> Swift.Result<Swift.Bool, any Swift.Error>
   #endif
@@ -185,9 +193,17 @@ public class ArctopSDKClient : ArctopSDK.ArctopSDKApi {
   #endif
   public func deinitializeArctop()
   #if compiler(>=5.3) && $AsyncAwait
-  public func loginUser(otp: Swift.String) async -> Swift.Result<Swift.Bool, any Swift.Error>
+  public func loginUser(otp: Swift.String) async -> Swift.Result<Swift.Void, any Swift.Error>
   #endif
-  public func isUserLoggedIn() throws -> Swift.Bool
+  #if compiler(>=5.3) && $AsyncAwait
+  public func loginUser() async -> Swift.Result<Swift.Void, any Swift.Error>
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  public func logoutUser() async throws
+  #endif
+  #if compiler(>=5.3) && $AsyncAwait
+  public func isUserLoggedIn() async throws -> Swift.Bool
+  #endif
   public func scanForAvailableDevices() throws
   public func terminateScanForDevices() throws
   public func connectSensorDevice(deviceId: Swift.String) throws
@@ -271,6 +287,8 @@ public func arctopSDKShutdown()
 public func arctopSDKLogin(otp: ArctopSDK.char_p, onSuccess: ArctopSDK.SuccessCallback, onFailure: ArctopSDK.FailureWithCodeCallback)
 @_cdecl("arctopSDKIsUserLoggedIn")
 public func arctopSDKIsUserLoggedIn(isLoggedIn: ArctopSDK.IsUserLoggedInCallback)
+@_cdecl("arctopSDKLogout")
+public func arctopSDKLogout(onComplete: ArctopSDK.SuccessCallback, onFailure: ArctopSDK.FailureWithCodeCallback)
 @_cdecl("arctopSDKGetUserCalibrationStatus")
 public func arctopSDKGetUserCalibrationStatus(onSuccess: ArctopSDK.SuccessWithIntCallback, onFailure: ArctopSDK.FailureWithCodeCallback)
 @_cdecl("arctopSDKScanForDevices")
@@ -306,6 +324,7 @@ public protocol ArctopSDKSessionUploadListener : ObjectiveC.NSObject {
 }
 extension Foundation.Date {
   public func unixTimeMS() -> Swift.Int64
+  public func unixTimeSeconds() -> Swift.Int64
 }
 extension ArctopSDK.UserCalibrationStatus : Swift.Equatable {}
 extension ArctopSDK.UserCalibrationStatus : Swift.Hashable {}
