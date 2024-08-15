@@ -338,8 +338,10 @@ namespace com.arctop
         {
 #if UNITY_EDITOR
             StartCoroutine(scanForMockDevices());
-#elif UNITY_IOS || UNITY_ANDROID
+#elif UNITY_IOS
             ArctopNativePlugin.arctopSDKScanForDevices(onDeviceDetected);
+#elif UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKScanForDevices();
 #endif
         }
         
