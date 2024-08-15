@@ -37,6 +37,9 @@ namespace com.arctop
         public static extern void arctopSDKLogin(string otp, SuccessCallback onSuccess, FailureWithCodeCallback onFailure);
 
         [DllImport("__Internal")]
+        public static extern void arctopSDKLogout(SuccessCallback onSuccess);
+        
+        [DllImport("__Internal")]
         public static extern void arctopSDKIsUserLoggedIn(IsUserLoggedInCallback isLoggedIn);
 
         [DllImport("__Internal")]
@@ -151,6 +154,20 @@ namespace com.arctop
                 onFailure(error);
             };
             mArctopSdkBridge.Call("arctopLaunchLogin",callback);
+        }
+
+        public static void arctopSDKLogout(SuccessCallback onSuccess,FailureWithCodeCallback onFailure)
+        {
+            var response = mArctopSdkBridge.Call<int>("arctopSDKLogoutUser");
+            switch (response)
+            {
+                case >= 0:
+                    onSuccess();
+                    break;
+                default:
+                    onFailure(response);
+                    break;
+            }
         }
 
         // Checks if the user is logged into the arctop servers.

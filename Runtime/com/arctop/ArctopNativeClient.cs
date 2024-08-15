@@ -34,6 +34,8 @@ namespace com.arctop
         [SerializeField] private UnityEvent OnUserLoggedIn;
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnUserLoginFailed;
         [SerializeField] private UnityEvent<bool> IsUserLoggedIn;
+        [SerializeField] private UnityEvent OnUserLogout;
+        [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnUserLogoutFailed;
         [SerializeField] private UnityEvent<ArctopSDK.UserCalibrationStatus> OnCalibrationStatus;
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnCalibrationStatusError;
         [SerializeField] private UnityEvent<string[]> OnDeviceListUpdated;
@@ -289,6 +291,10 @@ namespace com.arctop
 #endif
         }
 
+        public void LogoutUser()
+        {
+            ArctopNativePlugin.arctopSDKLogout(onUserLogout,onUserLogoutFailed);
+        }
 
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessCallback))]
         private static void onLoginSuccess()
@@ -300,7 +306,17 @@ namespace com.arctop
         {
             AddAction(() => { instance.OnUserLoginFailed.Invoke(getResponse(error)); });
         }
-      
+        [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessCallback))]
+        private static void onUserLogout()
+        {
+            AddAction(() => { instance.OnUserLogout.Invoke(); });
+        }
+        [MonoPInvokeCallback(typeof(ArctopNativePlugin.FailureWithCodeCallback))]
+        private static void onUserLogoutFailed(int error)
+        {
+            AddAction(() => { instance.OnUserLogoutFailed.Invoke(getResponse(error)); });
+        }
+        
         public void ScanForDevices()
         {
 #if UNITY_EDITOR
