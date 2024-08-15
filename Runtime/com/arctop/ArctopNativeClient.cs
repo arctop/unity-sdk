@@ -27,6 +27,8 @@ namespace com.arctop
         private ArctopSDK.UserCalibrationStatus m_SimulatedUserCalibrationResponse;
         [SerializeField]
         private bool m_LoginSuccessfullyInEditor = true;
+        [SerializeField]
+        private bool m_LogoutSuccessfullyInEditor = true;
         [SerializeField] [Tooltip("Allows you to change the connection status in editor")]
         private ArctopSDK.ConnectionState m_currentDebugConnection = ArctopSDK.ConnectionState.Unknown;
         
@@ -278,10 +280,12 @@ namespace com.arctop
 #if UNITY_EDITOR
             if (m_LoginSuccessfullyInEditor)
             {
+                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.LoggedIn;
                 onLoginSuccess();
             }
             else
             {
+                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.NotLoggedIn;
                 onLoginFailed((int)ArctopSDK.ResponseCodes.UnknownError);
             }
 #elif UNITY_IOS 
@@ -293,7 +297,20 @@ namespace com.arctop
 
         public void LogoutUser()
         {
+#if UNITY_EDITOR
+            if (m_LogoutSuccessfullyInEditor)
+            {
+                onUserLogout();
+                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.NotLoggedIn;
+            }
+            else
+            {
+                onUserLogoutFailed((int)ArctopSDK.ResponseCodes.UnknownError);
+            }
+#elif UNITY_IOS || UNITY_ANDROID
             ArctopNativePlugin.arctopSDKLogout(onUserLogout,onUserLogoutFailed);
+#endif
+            
         }
 
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessCallback))]
