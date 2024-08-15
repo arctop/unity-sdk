@@ -50,6 +50,12 @@ public class ArctopConnectionController : MonoBehaviour
         m_SplashPanel.SetActive(false);
     }
 
+	public void SetInfoMessage(String text)
+	{
+		clearTextTimer = 5f;
+        m_MessagePanel.text = text;
+	}
+
     public void OnLoginButtonClicked()
     {
         m_ArctopClient.LoginUser(m_otpField.text);
