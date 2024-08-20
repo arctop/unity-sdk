@@ -4,6 +4,7 @@ using UnityEngine;
 namespace com.arctop
 {
 #if UNITY_ANDROID
+    // Android proxy for native binding callback
     public class ArctopServiceBindCallback : AndroidJavaProxy
     {
         public event Action OnBindSuccess;

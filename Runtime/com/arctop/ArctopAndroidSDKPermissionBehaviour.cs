@@ -10,8 +10,14 @@ namespace com.arctop
     // You can also implement the whole thing yourself.
     public class ArctopAndroidSDKPermissionBehaviour : MonoBehaviour
     {
+        /// <summary>
+        /// Connect your arctopClient object here
+        /// </summary>
         [SerializeField] protected ArctopNativeClient arctopClient;
-        [SerializeField] protected bool createSDKOnPermissionGranted;
+        /// <summary>
+        /// should this component auto create the SDK once permission has been granted?
+        /// </summary>
+        [SerializeField] protected bool createSDKOnPermissionGranted = true;
         protected void Start()
         {
             #if UNITY_ANDROID && !UNITY_EDITOR

@@ -5,10 +5,11 @@ using UnityEngine;
 namespace com.arctop
 {
 #if UNITY_ANDROID
+    //Android success or failure callback proxy.
+    //Used on the Android native side
     public class ArctopSDKSuccessOrFailureCallback : AndroidJavaProxy
     {
         public event Action OnSuccess;
-        // TODO: Response codes
         public event Action<int> OnFailure;
         public ArctopSDKSuccessOrFailureCallback()
             : base("com.arctop.unity.IArctopSdkSuccessOrFailureCallback")
