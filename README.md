@@ -19,6 +19,7 @@ The plugin currently supports builds for Android and iOS devices, with a mock ed
     * [ArctopSDK](#arctopsdk)
     * [ArctopNativePlugin](#arctopnativeplugin)
     * [Listeners / Java Proxies](#listeners--java-proxies)
+  * [Quality Assurance / Signal Quality](#quality-assurance--signal-quality)
   * [Build setup](#build-setup)
     * [Android setup](#android-setup)
     * [iOS Setup](#ios-setup)
@@ -131,6 +132,17 @@ ArctopServiceBindCallback
 
 All these classes are used internally and aren't required for your interactions.
 
+## Quality Assurance / Signal Quality
+
+The SDK has 2 QA components. During a prediction, it will report a pass / fail and a reason for failure.
+It is generally good practice to notify the user on these errors.
+
+Before starting a session, the SDK will evaluate the signal quality of each electrode on the headband.
+It will report the values at a high rate, and the com.arctop.qa components are available to display a visualization of the data.
+
+You can use the QASensor prefab as a starting point or as is.
+
+There is a QA Example available with the isolated prefab in a scene for reference.
 
 
 ## Build setup
