@@ -10,52 +10,324 @@ using Random = UnityEngine.Random;
 
 namespace com.arctop
 {
+    /// <summary>
+    /// Arctop Native Client. This is the gateway between Unity and The Native Arctop SDK
+    /// </summary>
     public class ArctopNativeClient : MonoBehaviour
     {
+        #region Inspector Variables and Callbacks
+        /// <summary>
+        /// Each client requires an API key from Arctop before being able to initialize and operate.
+        /// Enter your key here.
+        /// </summary>
         [SerializeField] private string m_ApiKey;
+        /// <summary>
+        /// Should this component initialize the SDK on Awake?
+        /// </summary>
         [SerializeField] private bool HandleSDKInit;
+        /// <summary>
+        /// Should this component shutdown and release the SDK on Destroy?
+        /// </summary>
         [SerializeField] private bool HandleSDKDestroy;
         
-        [Header("In Editor Debug Only")] 
+        // Debug Only Section, allows for testing of different functionalities in editor
+        
+        /// <summary>
+        /// Should this component simulate realtime values
+        /// </summary>
+        [Header("In Editor Debug Only")]
         [SerializeField]
         private bool m_SimulateRealtime;
+        /// <summary>
+        /// Should this component simulate signal quality values in editor
+        /// </summary>
         [SerializeField]
         private bool m_SimulateSignalQuality;
+        /// <summary>
+        /// Determines the response in editor to a call for UserLoginStatus
+        /// </summary>
         [SerializeField] 
         private ArctopSDK.LoginStatus m_SimulatedUserLoggedInResponse;
+        /// <summary>
+        /// Determines the response in editor for CheckUserCalibrationStatus
+        /// </summary>
         [SerializeField] 
         private ArctopSDK.UserCalibrationStatus m_SimulatedUserCalibrationResponse;
+        /// <summary>
+        /// Should a call to LoginUser in editor succeed or fail
+        /// </summary>
         [SerializeField]
         private bool m_LoginSuccessfullyInEditor = true;
+        /// <summary>
+        /// Should the call to LogoutUser in editor succeed or fail
+        /// </summary>
         [SerializeField]
         private bool m_LogoutSuccessfullyInEditor = true;
+        /// <summary>
+        /// In Editor headband connection status
+        /// </summary>
         [SerializeField] [Tooltip("Allows you to change the connection status in editor")]
         private ArctopSDK.ConnectionState m_currentDebugConnection = ArctopSDK.ConnectionState.Unknown;
         
+        // Response events. Use these to react to SDK messages
+        
+        /// <summary>
+        /// Called when the user has successfully logged in after a call to LoginUser
+        /// </summary>
         [Header("Events")]
         [SerializeField] private UnityEvent OnUserLoggedIn;
+        /// <summary>
+        /// Called when the user login failed
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnUserLoginFailed;
+        /// <summary>
+        /// Callback for UserLoggedInStatus
+        /// </summary>
         [SerializeField] private UnityEvent<bool> IsUserLoggedIn;
+        /// <summary>
+        /// Callback for successfully logging out a user
+        /// </summary>
         [SerializeField] private UnityEvent OnUserLogout;
+        /// <summary>
+        /// Callback for failed call to LogoutUser
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnUserLogoutFailed;
+        /// <summary>
+        /// Callback for user calibration status
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.UserCalibrationStatus> OnCalibrationStatus;
+        /// <summary>
+        /// Callback when an error occured trying to retrieve user calibration status
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnCalibrationStatusError;
+        /// <summary>
+        /// Callback with the new device list containing all discoverd headbands
+        /// </summary>
         [SerializeField] private UnityEvent<string[]> OnDeviceListUpdated;
+        /// <summary>
+        /// Callback for a successful initialization of SDK
+        /// </summary>
         [SerializeField] private UnityEvent OnSDKInitSuccess;
+        /// <summary>
+        /// Callback when an error occured trying to initialize the SDK
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnSDKInitFailed;
+        /// <summary>
+        /// Callback for a successful prediction start
+        /// </summary>
         [SerializeField] private UnityEvent OnPredictionStart;
+        /// <summary>
+        /// Callback when an error occured trying to start a prediction
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnPredictionStartFailed;
+        /// <summary>
+        /// Callback for when the headband connection status has changed.
+        /// 1st parameter is the previous connection status
+        /// 2nd parameter is the current connection status
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.ConnectionState, ArctopSDK.ConnectionState> OnConnectionStateChanged;
+        /// <summary>
+        /// Callback for a realtime value receieved from the prediction.
+        /// 1st parameter is the name of the value
+        /// 2nd parameter is the value
+        /// </summary>
         [SerializeField] private UnityEvent<string, float> OnRealtimeValue;
+        /// <summary>
+        /// Callback for realtime QA status.
+        /// 1st parameter is QA passed / failed
+        /// 2nd parameter is the QA error in the case of a failure
+        /// </summary>
         [SerializeField] private UnityEvent<bool, ArctopSDK.QAFailureType> OnQAStatus;
+        /// <summary>
+        /// Callback for a successful prediction end
+        /// </summary>
         [SerializeField] private UnityEvent OnPredictionEnd;
+        /// <summary>
+        /// Callback when an error occured trying to end a prediction
+        /// </summary>
         [SerializeField] private UnityEvent<ArctopSDK.ResponseCodes> OnPredictionEndFailed;
+        /// <summary>
+        /// Callback with signal quality values
+        /// </summary>
         [SerializeField] private UnityEvent<string> OnSignalQuality;
+        /// <summary>
+        /// Callback for session complete
+        /// </summary>
         [SerializeField] private UnityEvent OnSessionComplete;
 
+        /// <summary>
+        /// Android only, callback for when an error binding to the service occured
+        /// </summary>
         [Header("Android only Events")]
         [SerializeField] private UnityEvent<ArctopSDK.BindError> OnSDKCreateFailed;
+        #endregion
+        
+        #region Public API
 
+        /// <summary>
+        /// Creates the SDK instance.
+        /// On Android -> Binds to the SDK Service
+        /// On iOS -> Initializes the SDK
+        /// In Editor -> Calls on SDK Init callback
+        /// </summary>
+        public void CreateArctopSDK()
+        {
+#if UNITY_EDITOR
+            onSDKInit();
+#elif UNITY_IOS
+            ArctopNativePlugin.arctopSDKInit(m_ApiKey ,Application.identifier, onSDKInit, onSDKInitFailed);
+#elif UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKCreate(onSDKCreate, onSDKCreateFailed);
+#endif
+        }
+        
+        /// <summary>
+        /// Checks if there is a user logged into the system
+        /// </summary>
+        public void CheckUserLoggedIn()
+        {
+#if UNITY_EDITOR
+            onUserLoggedInCheck(m_SimulatedUserLoggedInResponse == ArctopSDK.LoginStatus.LoggedIn);
+#elif UNITY_IOS || UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKIsUserLoggedIn(onUserLoggedInCheck);
+#endif
+        }
+        
+        /// <summary>
+        /// Gets the current user's calibration status
+        /// </summary>
+        public void GetUserCalibrationStatus()
+        {
+#if UNITY_EDITOR
+            AddAction(() => { instance.OnCalibrationStatus.Invoke(m_SimulatedUserCalibrationResponse); });
+#elif UNITY_IOS || UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKGetUserCalibrationStatus(onCalibrationStatusSuccess, onCalibrationStatusFailure );
+#endif
+        }
+        
+        /// <summary>
+        /// Logs a user in using either OTP (iOS) or launching the login page in Android
+        /// </summary>
+        /// <param name="otp"></param>
+        public void LoginUser(string otp = "")
+        {
+#if UNITY_EDITOR
+            if (m_LoginSuccessfullyInEditor)
+            {
+                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.LoggedIn;
+                onLoginSuccess();
+            }
+            else
+            {
+                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.NotLoggedIn;
+                onLoginFailed((int)ArctopSDK.ResponseCodes.UnknownError);
+            }
+#elif UNITY_IOS 
+            ArctopNativePlugin.arctopSDKLogin(otp,onLoginSuccess,onLoginFailed);
+#elif UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKLogin(onLoginSuccess,onLoginFailed);
+#endif
+        }
+        
+        /// <summary>
+        /// Logs the user out of the application
+        /// </summary>
+        public void LogoutUser()
+        {
+#if UNITY_EDITOR
+            if (m_LogoutSuccessfullyInEditor)
+            {
+                onUserLogout();
+                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.NotLoggedIn;
+            }
+            else
+            {
+                onUserLogoutFailed((int)ArctopSDK.ResponseCodes.UnknownError);
+            }
+#elif UNITY_IOS || UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKLogout(onUserLogout,onUserLogoutFailed);
+#endif
+        }
+        
+        /// <summary>
+        /// Begins a scan for headband devices 
+        /// </summary>
+        public void ScanForDevices()
+        {
+#if UNITY_EDITOR
+            StartCoroutine(scanForMockDevices());
+#elif UNITY_IOS
+            ArctopNativePlugin.arctopSDKScanForDevices(onDeviceDetected);
+#elif UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKScanForDevices();
+#endif
+        }
+        
+        /// <summary>
+        /// Performs a connection to the selected device
+        /// </summary>
+        /// <param name="deviceId">The device ID to connect to</param>
+        public void ConnectToDeviceId(string deviceId)
+        {
+#if UNITY_EDITOR
+            StartCoroutine(connectToMockDevice());
+#elif UNITY_IOS || UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKConnectToDeviceId(deviceId);
+#endif
+        }
+        /// <summary>
+        /// Disconnects from a currently connected headband device
+        /// </summary>
+        public void DisconnectDevice()
+        {
+#if UNITY_EDITOR
+            StartCoroutine(disconnectMockDevice());
+#elif UNITY_IOS || UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKDisconnectDevice();
+#endif
+        }
+        
+        /// <summary>
+        /// Starts a realtime prediction
+        /// </summary>
+        /// <param name="prediction">The desired prediction to start</param>
+        public void StartPrediction(ArctopSDK.Predictions prediction)
+        {
+#if UNITY_EDITOR
+            onPredictionStartSuccess();
+            m_lastPredictionFrame = Time.frameCount;
+#elif UNITY_IOS || UNITY_ANDROID
+            var predictionName = prediction.ToString().ToLower();
+            ArctopNativePlugin.arctopSDKStartPredictions(predictionName, onPredictionStartSuccess, onPredictionStartFailed);
+#endif
+        }
+        /// <summary>
+        /// Finishes the active prediction
+        /// </summary>
+        public void FinishPrediction()
+        {
+#if UNITY_EDITOR
+            StartCoroutine(completeInEditorSession());
+#elif UNITY_IOS || UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKEndPrediction(onPredictionEndSuccess, onPredictionEndFailed);
+#endif
+        }
+        
+        /// <summary>
+        /// Sets a user marker at the current timestamp
+        /// </summary>
+        /// <param name="data">Data to write along with marker</param>
+        public void SetUserMarker(string data)
+        {
+#if UNITY_EDITOR
+            Debug.Log($"Set marker {data}");
+#elif UNITY_IOS || UNITY_ANDROID
+            ArctopNativePlugin.arctopSDKWriteUserMarker(data);
+#endif
+        }
+        #endregion
+
+        #region Private Implementation
 #if UNITY_ANDROID
         private ArctopSDKCallback mAndroidSDKCallback;
 #endif
@@ -83,16 +355,6 @@ namespace com.arctop
             }
         }
         
-        public void CreateArctopSDK()
-        {
-#if UNITY_EDITOR
-            onSDKInit();
-#elif UNITY_IOS
-            ArctopNativePlugin.arctopSDKInit(m_ApiKey ,Application.identifier, onSDKInit, onSDKInitFailed);
-#elif UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKCreate(onSDKCreate, onSDKCreateFailed);
-#endif
-        }
         
 #if UNITY_ANDROID
         private static void onSDKCreate()
@@ -138,14 +400,11 @@ namespace com.arctop
                 signalQualitySimulation();
             }
         }
-
+        /// <summary>
+        /// Provides realtime simulation values for in editor testing
+        /// </summary>
         private void realtimeSimulation()
         {
-            //"heart_rate";
-            //"zone_state";
-            //"focus";
-            //"enjoyment";
-            //"avg_motion";
             if (m_currentDebugConnection != ArctopSDK.ConnectionState.Connected) return;
             if ((Time.frameCount - m_lastPredictionFrame) % 60 != 0) return;
             onValueChangedCallback("heart_rate" , Random.value * 60 + 60);
@@ -155,10 +414,11 @@ namespace com.arctop
         }
 
         private float[] m_signalQualityValues = new[] { 113.0f, 113.0f, 113.0f, 113.0f };
-        
-        
         private int m_lastFrame = 0;
         private int m_lastPredictionFrame = 0;
+        /// <summary>
+        /// Provides signal quality values for in editor testing
+        /// </summary>
         private void signalQualitySimulation()
         {
             if (m_currentDebugConnection == ArctopSDK.ConnectionState.Connected)
@@ -236,29 +496,13 @@ namespace com.arctop
         }
 #endif
         }
-
-        public void CheckUserLoggedIn()
-        {
-#if UNITY_EDITOR
-            onUserLoggedInCheck(m_SimulatedUserLoggedInResponse == ArctopSDK.LoginStatus.LoggedIn);
-#elif UNITY_IOS || UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKIsUserLoggedIn(onUserLoggedInCheck);
-#endif
-        }
+        
+        
         
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.IsUserLoggedInCallback))]
         private static void onUserLoggedInCheck(bool loggedIn)
         {
             AddAction( ()=> { instance.IsUserLoggedIn.Invoke(loggedIn); });
-        }
-
-        public void GetUserCalibrationStatus()
-        {
-#if UNITY_EDITOR
-            AddAction(() => { instance.OnCalibrationStatus.Invoke(m_SimulatedUserCalibrationResponse); });
-#elif UNITY_IOS || UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKGetUserCalibrationStatus(onCalibrationStatusSuccess, onCalibrationStatusFailure );
-#endif
         }
 
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessWithIntCallback))]
@@ -273,46 +517,6 @@ namespace com.arctop
         {
             AddAction(() => { instance.OnCalibrationStatusError.Invoke(getResponse(error)); });
         }
-
-        
-        public void LoginUser(string otp = "")
-        {
-#if UNITY_EDITOR
-            if (m_LoginSuccessfullyInEditor)
-            {
-                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.LoggedIn;
-                onLoginSuccess();
-            }
-            else
-            {
-                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.NotLoggedIn;
-                onLoginFailed((int)ArctopSDK.ResponseCodes.UnknownError);
-            }
-#elif UNITY_IOS 
-            ArctopNativePlugin.arctopSDKLogin(otp,onLoginSuccess,onLoginFailed);
-#elif UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKLogin(onLoginSuccess,onLoginFailed);
-#endif
-        }
-
-        public void LogoutUser()
-        {
-#if UNITY_EDITOR
-            if (m_LogoutSuccessfullyInEditor)
-            {
-                onUserLogout();
-                m_SimulatedUserLoggedInResponse = ArctopSDK.LoginStatus.NotLoggedIn;
-            }
-            else
-            {
-                onUserLogoutFailed((int)ArctopSDK.ResponseCodes.UnknownError);
-            }
-#elif UNITY_IOS || UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKLogout(onUserLogout,onUserLogoutFailed);
-#endif
-            
-        }
-
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessCallback))]
         private static void onLoginSuccess()
         {
@@ -332,17 +536,6 @@ namespace com.arctop
         private static void onUserLogoutFailed(int error)
         {
             AddAction(() => { instance.OnUserLogoutFailed.Invoke(getResponse(error)); });
-        }
-        
-        public void ScanForDevices()
-        {
-#if UNITY_EDITOR
-            StartCoroutine(scanForMockDevices());
-#elif UNITY_IOS
-            ArctopNativePlugin.arctopSDKScanForDevices(onDeviceDetected);
-#elif UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKScanForDevices();
-#endif
         }
         
 #if UNITY_EDITOR
@@ -388,15 +581,6 @@ namespace com.arctop
                     instance.OnDeviceListUpdated.Invoke(instance.m_headbandDevices.ToArray());
                 });
         }
-
-        public void ConnectToDeviceId(string deviceId)
-        {
-#if UNITY_EDITOR
-            StartCoroutine(connectToMockDevice());
-#elif UNITY_IOS || UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKConnectToDeviceId(deviceId);
-#endif
-        }
         [MonoPInvokeCallback((typeof(ArctopNativePlugin.ConnectionStatusCallback)))]
         private static void onConnectionChanged(int previous,int current)
         {
@@ -411,49 +595,17 @@ namespace com.arctop
                     instance.OnConnectionStateChanged.Invoke(prev, curr);
                 });
         }
-        
-        public void StartPrediction(ArctopSDK.Predictions prediction)
-        {
-#if UNITY_EDITOR
-            onPredictionStartSuccess();
-            m_lastPredictionFrame = Time.frameCount;
-#elif UNITY_IOS || UNITY_ANDROID
-            var predictionName = prediction.ToString().ToLower();
-            ArctopNativePlugin.arctopSDKStartPredictions(predictionName, onPredictionStartSuccess, onPredictionStartFailed);
-#endif
-        }
-        
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessCallback))]
         private static void onPredictionStartSuccess()
         {
             Debug.Log("onPredictionStart");
             AddAction(() => { instance.OnPredictionStart.Invoke(); });
         }
-        
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.FailureWithCodeCallback))]
         private static void onPredictionStartFailed(int error)
         {
             AddAction(() => { instance.OnPredictionStartFailed.Invoke(getResponse(error)); });
         }
-        
-        public void FinishPrediction()
-        {
-#if UNITY_EDITOR
-            StartCoroutine(completeInEditorSession());
-#elif UNITY_IOS || UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKEndPrediction(onPredictionEndSuccess, onPredictionEndFailed);
-#endif
-        }
-
-        public void SetUserMarker(string data)
-        {
-#if UNITY_EDITOR
-            Debug.Log($"Set marker {data}");
-#elif UNITY_IOS || UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKWriteUserMarker(data);
-#endif
-        }
-        
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.SuccessCallback))]
         private static void onPredictionEndSuccess()
         {
@@ -464,26 +616,14 @@ namespace com.arctop
             onSessionComplete();
             #endif
         }
-        
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.FailureWithCodeCallback))]
         private static void onPredictionEndFailed(int error)
         {
             AddAction(() => { instance.OnPredictionEndFailed.Invoke(getResponse(error)); });
         }
-        
         private static void onSessionComplete()
         {
             AddAction( ()=> { instance.OnSessionComplete.Invoke(); });
-        }
-
-       
-        public void DisconnectDevice()
-        {
-#if UNITY_EDITOR
-            StartCoroutine(disconnectMockDevice());
-#elif UNITY_IOS || UNITY_ANDROID
-            ArctopNativePlugin.arctopSDKDisconnectDevice();
-#endif
         }
         [MonoPInvokeCallback(typeof(ArctopNativePlugin.QAStatusCallback))]
         private static void onQAStatusCallback(bool passed, int errorCode)
@@ -501,13 +641,10 @@ namespace com.arctop
         {
             AddAction(() => { instance.OnSignalQuality.Invoke(signalQuality); });
         }
-
         private static ArctopSDK.ResponseCodes getResponse(int value)
         {
             return (ArctopSDK.ResponseCodes)Enum.ToObject(typeof(ArctopSDK.ResponseCodes), value);
         }
-        
+        #endregion
     }
-    
-   
 }
