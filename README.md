@@ -48,7 +48,7 @@ _ArctopNativePlugin.cs_ is the Unity ↔ Native binding. This class defines all 
 
 _ArctopNativeClient.cs_ is a C# Monobehaviour that provides a wrapper around the native functionality, with a public API and UnityEvents allowing linkage of callbacks from the Editor. This class also provides mock functionality inside the editor, which allows testing in editor without the need to build to device.
 
-These two class are the heart of the package. Other classes and their purpose are described later in [this document](#package-components).
+These two classes are the heart of the package. Other classes and their purpose are described later in [this document](#package-components).
 
 ## SDK Flow
 
@@ -58,7 +58,7 @@ To recap, the flow is Permissions/Binding(Android only) -> Init -> Check login s
 
 ## Permissions (Android only)
 
-The _ArctopAndroidSDKPermissionBehaviour.cs_ is available to provide handling of the Arctop Data permission a user must grant your app before SDK initialization can occur.
+The _ArctopAndroidSDKPermissionBehaviour.cs_ is available to provide handling of the Arctop data permission a user must grant your app before SDK initialization can occur.
 The behavior is configured to run, create, and initialize the native SDK once permission is granted. Alternatively, you can handle permissions on your own.
 
 Since under the hood the SDK operates as an Android service, the Unity client needs to bind to that service before Initializing.
@@ -102,7 +102,7 @@ You can use the example as a reference for scene / project setup.
 
 The native client class / behavior is the entry point and event launcher for all your coding and editor needs with the native plugin.
 
-Most of the functionality is asynchronous and response from functions will be delivered via events. As events from the native side arrive in different threads, they are put into a queue and are dispatched one at a time at each Update() cycle. This allows the calls to run on Unity’s main thread, retains order of arrival, and makes sure to not clog the main thread with too many calls.
+Most of the functionality is asynchronous and responses from functions will be delivered via events. As events from the native side arrive in different threads, they are put into a queue and are dispatched one at a time at each Update() cycle. This allows the calls to run on Unity’s main thread, retains order of arrival, and makes sure to not clog the main thread with too many calls.
 
 This means that any function that is invoked in response to an event will be run in a single frame, so consider delegating long-running operations to coroutines or tasks.
 
@@ -133,7 +133,7 @@ All these classes are used internally and aren't required for your interactions.
 ## Quality Assurance / Signal Quality
 
 The SDK has 2 QA components. During a prediction, it will report a pass/fail and a reason for failure.
-It is generally good practice to notify the user on these errors.
+It is generally good practice to notify the user of these errors.
 
 Before starting a session, the SDK will evaluate the signal quality of each electrode on the headband.
 It will report the values at a high rate, and the com.arctop.qa components are available to display a visualization of the data.
@@ -181,7 +181,7 @@ You can see an example of the files from the AndroidBuildFiles sample.
 
 ### iOS Setup
 
-In order to make sure that the project embeds Arctop's framework correctly, select your target, and under the build phases, open the "Embed Frameworks" section, and add ArctopSDK.framework.
+In order to make sure that the project embeds Arctop's framework correctly, select your target and, under the build phases, open the "Embed Frameworks" section and add ArctopSDK.framework.
 
 ![](docs/embedframework.png)
 
